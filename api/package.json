@@ -15,14 +15,16 @@
   "type": "module",
   "dependencies": {
     "@langchain/community": "^0.3.49",
-    "@langchain/core": "^0.3.66",
+    "@langchain/core": "^0.3.68",
+    "@langchain/langgraph": "^0.4.3",
     "@langchain/openai": "^0.6.3",
     "@supabase/supabase-js": "^2.53.0",
     "cheerio": "^1.1.2",
     "cors": "^2.8.5",
     "envalid": "^8.1.0",
     "express": "^5.1.0",
-    "langchain": "^0.3.30"
+    "langchain": "^0.3.30",
+    "openai": "^5.12.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
