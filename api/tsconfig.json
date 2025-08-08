@@ -1,0 +1,42 @@
+{
+  // Learn more: https://aka.ms/tsconfig
+  "compilerOptions": {
+    // ========== FILE STRUCTURE ==========
+    "rootDir": "./src", // Source code root
+    "outDir": "./dist", // Compiled JS output
+
+    // ========== MODULE & TARGET ==========
+    "module": "esnext", // Use modern ES module syntax (import/export)
+    "target": "esnext", // Target latest JS features (required for top-level await)
+    "moduleResolution": "node", // Resolve modules like Node.js (NOT "bundler")
+
+    // ========== NODE & TYPES ==========
+    "types": ["node"], // Include Node.js types
+    "allowJs": true, // Allow compiling .js files
+    "esModuleInterop": true, // Allow default imports from CommonJS modules
+    "allowSyntheticDefaultImports": true, // Allow `import x from 'cjs'` syntax
+    "skipLibCheck": true, // Skip type checking of declaration files
+
+    // ========== OUTPUT OPTIONS ==========
+    "sourceMap": true, // Generate source maps
+    "declaration": true, // Emit .d.ts type declarations
+    "declarationMap": true, // Source maps for declarations
+
+    // ========== TYPE CHECKING ==========
+    "strict": true, // Enable all strict type checks
+    "noUncheckedIndexedAccess": true, // Disallow unsafe index access
+    "exactOptionalPropertyTypes": true, // Optional props are treated as exactly optional
+    "noImplicitReturns": true, // Ensure all functions return a value
+    "noImplicitOverride": true, // Require 'override' keyword
+    "noUnusedLocals": true, // Disallow unused local variables
+    "noUnusedParameters": true, // Disallow unused function params
+    "noFallthroughCasesInSwitch": true, // Prevent accidental fallthrough
+    "noPropertyAccessFromIndexSignature": true, // More strict property access
+
+    // ========== MODULE BEHAVIOR ==========
+    "isolatedModules": true, // Required for tools like Babel/ESBuild
+    "moduleDetection": "force" // Force module detection, even without imports
+  },
+  "include": ["src/**/*"], // only compile source code
+  "exclude": ["tools/**/*"] // exclude build tools folde
+}
