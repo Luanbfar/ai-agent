@@ -12,6 +12,11 @@ const knowledgeAgent = new KnowledgeAgent("gpt-5-nano");
 
 app.get("/", async (req: Request, res: Response) => {
   console.log(`Request received from IP: ${req.ip}`);
+  res.send("API working!");
+});
+
+app.get("/test", async (req: Request, res: Response) => {
+  console.log(`Request received from IP: ${req.ip}`);
   const result = await knowledgeAgent.generate(req.body.chatInput);
   res.send(result);
 });
