@@ -3,15 +3,25 @@ import { ITicketRepository } from "../interfaces/ITicketRepository";
 import { MongoTicketRepository } from "../repositories/MongoTicket";
 import { TicketDetails } from "../types/TicketDetails";
 
+/**
+ * Service responsible for handling ticket creation and management.
+ */
 export class TicketService {
   private mongoTicketRepository: ITicketRepository;
+
+  /**
+   * Initializes a new instance of TicketService
+   * and sets up the MongoDB ticket repository.
+   */
   constructor() {
     this.mongoTicketRepository = new MongoTicketRepository();
   }
 
   /**
-   * Create a ticket with the given details.
-   * Replace this with actual ticket creation logic.
+   * Creates a new ticket in the database using the provided details.
+   *
+   * @param ticketDetails - The details of the ticket to create.
+   * @returns The created ticket document or undefined if creation failed.
    */
   private async createTicket(ticketDetails: TicketDetails): Promise<ITicket | undefined> {
     try {
@@ -21,13 +31,20 @@ export class TicketService {
         status: ticketDetails.status,
       };
       const createdTicket = await this.mongoTicketRepository.create(ticketData);
-
       return createdTicket;
     } catch (error) {
       console.error(error);
-      return;
+      return undefined;
     }
   }
+
+  /**
+   * Parses the response from the AI model and, if it indicates
+   * a ticket creation action, creates a ticket with the parsed details.
+   *
+   * @param response - The AI model's JSON string response.
+   * @returns An object with a confirmation message or null if no ticket was created.
+   */
   async handleTicketCreation(response: string): Promise<{ response: string } | null> {
     try {
       const parsed = JSON.parse(response);
@@ -45,7 +62,7 @@ export class TicketService {
           return {
             response: `Ticket created successfully with subject: "${
               createdTicket.subject
-            } at ${createdTicket.createdAt?.toLocaleTimeString()}`,
+            }" at ${createdTicket.createdAt?.toLocaleTimeString()}`,
           };
         }
       }
