@@ -1,3 +1,4 @@
+// URLs for InifinitePay website
 export const infinitePayUrls = [
   "https://www.infinitepay.io",
   "https://www.infinitepay.io/maquininha",

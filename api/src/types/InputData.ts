@@ -1,6 +1,6 @@
 import { ChatMessage } from "../interfaces/IChatMemoryRepository";
 
 export type InputData = {
-  userId: string;
+  sessionId: string;
   chatMessage: ChatMessage;
 };

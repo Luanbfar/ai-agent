@@ -5,18 +5,41 @@ import { ChatMessage } from "../interfaces/IChatMemoryRepository";
 
 const agentsService = new AgentsService();
 
+/**
+ * Express route handler for chat requests.
+ *
+ * Processes user chat input, maintains session context,
+ * and returns AI-generated responses.
+ *
+ * @param {Request} req - Express request object.
+ *   Expects JSON body with:
+ *     - sessionId: string | undefined, optional user session ID
+ *     - chatInput: string, required user message content
+ *
+ * @param {Response} res - Express response object.
+ *   Sends JSON response containing:
+ *     - userId: string, session ID used (new or existing)
+ *     - response: string, AI-generated message
+ *
+ * @returns {Promise<void>}
+ */
 export async function handleChatRequest(req: Request, res: Response): Promise<void> {
   try {
-    const { userId, chatInput } = req.body;
+    const { sessionId, chatInput } = req.body;
+
     if (!chatInput) {
       res.status(400).json({ error: "Message is required" });
       return;
     }
+
     const chatMessage: ChatMessage = { role: "user", content: chatInput };
-    const data: InputData = { userId, chatMessage };
+    const data: InputData = { sessionId, chatMessage };
+
+    // Send chat input and session info to AI agents service
     const response = await agentsService.handleUserQuery(data);
-    res.send(response);
-    return;
+
+    // Return userId (session) and AI response to client
+    res.json(response);
   } catch (error) {
     console.error(error);
     res.status(500).send(error);
