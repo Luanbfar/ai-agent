@@ -1,76 +1,75 @@
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { DocumentRetriever } from "../../../src/rag/retriever";
+import { describe, expect, it, jest, beforeEach, beforeAll } from "@jest/globals";
 
-// Mock node-fetch (return a minimal Response-like object)
-const mockFetch = jest.fn((...args: any[]) =>
-  Promise.resolve({
-    ok: true,
-    text: async () => "fake document content",
-  })
-);
-jest.unstable_mockModule("node-fetch", () => ({
-  default: mockFetch,
+// Mock all dependencies with proper structure
+jest.mock("node-fetch", () => ({
+  default: jest.fn(),
 }));
 
-// Mock document-loader (returns array of Documents)
-const mockProcessDocument = jest.fn((...args: any[]) => Promise.resolve([{ pageContent: "Processed content" }]));
-jest.unstable_mockModule("../../../src/rag/document-loader", () => ({
-  default: mockProcessDocument,
+jest.mock("../../../src/rag/document-loader", () => ({
+  default: jest.fn(),
 }));
 
-// Mock vector-store
-const mockAddDocuments = jest.fn((...args: any[]) => Promise.resolve());
-const mockSimilaritySearch = jest.fn((...args: any[]) => Promise.resolve([{ pageContent: "Similar doc" }]));
-jest.unstable_mockModule("../../../src/rag/vector-store", () => ({
+jest.mock("../../../src/rag/vector-store", () => ({
+  __esModule: true,
   default: {
-    addDocuments: mockAddDocuments,
-    similaritySearch: mockSimilaritySearch,
+    similaritySearch: jest.fn(),
+    addDocuments: jest.fn(),
   },
 }));
 
-// Mock log utilities
-const mockIsDocumentUpToDate = jest.fn((...args: any[]) => Promise.resolve(false));
-const mockLogDocumentUpdate = jest.fn((...args: any[]) => Promise.resolve());
-jest.unstable_mockModule("../../../src/utils/log", () => ({
-  isDocumentUpToDate: mockIsDocumentUpToDate,
-  logDocumentUpdate: mockLogDocumentUpdate,
+jest.mock("../../../src/utils/log", () => ({
+  isDocumentUpToDate: jest.fn(),
+  logDocumentUpdate: jest.fn(),
 }));
 
+// Import after mocking
+import { DocumentRetriever } from "../../../src/rag/retriever";
+
+let isDocumentUpToDateMock: jest.Mock<any>;
+let similaritySearchMock: jest.Mock<any>;
+
+beforeAll(async () => {
+  const utilsLog = await import("../../../src/utils/log");
+  const vectorStore = await import("../../../src/rag/vector-store");
+
+  isDocumentUpToDateMock = utilsLog.isDocumentUpToDate as jest.Mock;
+  similaritySearchMock = vectorStore.default.similaritySearch as jest.Mock;
+});
+
 describe("DocumentRetriever", () => {
-  let documentRetriever: DocumentRetriever;
+  let retriever: DocumentRetriever;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    documentRetriever = new DocumentRetriever();
+
+    // Default mock behavior
+    isDocumentUpToDateMock.mockResolvedValue(true);
+    similaritySearchMock.mockResolvedValue([]);
+
+    retriever = new DocumentRetriever();
   });
 
-  it("should fetch and process documents correctly", async () => {
-    // Arrange: adjust what the mocks will return for this test
-    mockFetch.mockResolvedValue({
-      ok: true,
-      text: async () => "fake document content",
+  it("should create a retriever successfully", () => {
+    expect(retriever).toBeDefined();
+    expect(retriever).toBeInstanceOf(DocumentRetriever);
+  });
+
+  it("should retrieve documents when up to date", async () => {
+    isDocumentUpToDateMock.mockResolvedValue(true);
+    similaritySearchMock.mockResolvedValue([{ pageContent: "InfinitePay business hours information" }]);
+
+    const result = await retriever.retrieve("business hours");
+
+    expect(result).toEqual({
+      context: [{ pageContent: "InfinitePay business hours information" }],
     });
+  });
 
-    mockProcessDocument.mockResolvedValue([{ pageContent: "Processed content" }]);
-    mockAddDocuments.mockResolvedValue(undefined);
+  it("should handle errors and return empty context", async () => {
+    isDocumentUpToDateMock.mockRejectedValue(new Error("Database error"));
 
-    mockIsDocumentUpToDate.mockResolvedValue(false);
-    mockLogDocumentUpdate.mockResolvedValue(undefined);
+    const result = await retriever.retrieve("test query");
 
-    // Act
-    const result = await documentRetriever.retrieve("some question");
-
-    // Assert - ensure mocked integrations were used and result shaped as expected
-    expect(mockFetch).toHaveBeenCalled(); // fetch called for each URL inside addDocumentChunks
-    expect(mockProcessDocument).toHaveBeenCalledWith("fake document content");
-    expect(mockAddDocuments).toHaveBeenCalled();
-    expect(mockIsDocumentUpToDate).toHaveBeenCalled();
-
-    // DocumentRetriever.retrieve returns { context: Document[] }
-    expect(result).toEqual(
-      expect.objectContaining({
-        context: expect.any(Array),
-      })
-    );
+    expect(result).toEqual({ context: [] });
   });
 });

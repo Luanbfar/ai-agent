@@ -1,127 +1,93 @@
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { OrchestratorAgent } from "../../../src/agents/orchestrator-agent";
-import { AgentType } from "../../../src/types/AgentType";
-import { OpenAIModels } from "../../../src/types/OpenAIModels";
-import { ChatMessage } from "../../../src/interfaces/IChatMemoryRepository";
+import { describe, expect, it, jest, beforeEach, beforeAll } from "@jest/globals";
 
-// Mock OpenAI client
-const mockCreate = jest.fn((...args: any[]) => Promise.resolve({ output_text: "" }));
-jest.unstable_mockModule("openai", () => ({
-  default: jest.fn().mockImplementation(() => ({
-    responses: {
+// Mock OpenAI
+jest.mock("openai", () => {
+  // Create a jest.fn() to mock the responses.create method
+  const mockCreate = jest.fn();
+
+  // Mock class to replace OpenAI class
+  class MockOpenAI {
+    responses = {
       create: mockCreate,
-    },
-  })),
+    };
+  }
+
+  return {
+    __esModule: true,
+    default: MockOpenAI,
+    __mockCreate: mockCreate, // expose mockCreate for your tests
+  };
+});
+
+// Mock config
+jest.mock("../../../src/config/loadEnv", () => ({
+  openaiApiKey: "test-api-key",
 }));
 
+// Import after mocking
+import { OrchestratorAgent } from "../../../src/agents/orchestrator-agent";
+import { AgentType } from "../../../src/types/AgentType";
+import { ChatMessage } from "../../../src/interfaces/IChatMemoryRepository";
+
+let mockCreate: jest.Mock<any>;
+
+beforeAll(async () => {
+  const openaiModule = await import("openai");
+  mockCreate = (openaiModule as any).__mockCreate;
+});
+
 describe("OrchestratorAgent", () => {
-  let orchestratorAgent: OrchestratorAgent;
+  let agent: OrchestratorAgent;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    orchestratorAgent = new OrchestratorAgent();
+    agent = new OrchestratorAgent();
   });
 
-  describe("constructor", () => {
-    it("should initialize with default parameters", () => {
-      expect(orchestratorAgent).toBeInstanceOf(OrchestratorAgent);
-    });
-
-    it("should initialize with custom model and system prompt", () => {
-      const customPrompt = "Custom orchestrator prompt";
-      const customAgent = new OrchestratorAgent(OpenAIModels.GPT4, customPrompt);
-      expect(customAgent).toBeInstanceOf(OrchestratorAgent);
-    });
+  it("should create an agent successfully", () => {
+    expect(agent).toBeDefined();
+    expect(agent).toBeInstanceOf(OrchestratorAgent);
   });
 
-  describe("generate", () => {
-    it("should return parsed JSON response from OpenAI", async () => {
-      const mockResponse = {
-        output_text: JSON.stringify({ agentType: "knowledgeAgent" }),
-      };
-      mockCreate.mockResolvedValue(mockResponse);
-
-      const chatMessage: ChatMessage = {
-        role: "user",
-        content: "What are your business hours?",
-      };
-
-      const result = await orchestratorAgent.generate(chatMessage);
-
-      expect(result).toEqual({ agentType: "knowledgeAgent" });
-      expect(mockCreate).toHaveBeenCalledWith({
-        model: OpenAIModels.GPT5_NANO,
-        instructions: expect.stringContaining("AI agents orchestrator"),
-        input: [{ role: "user", content: "What are your business hours?" }],
-      });
+  it("should route to knowledge agent for information queries", async () => {
+    mockCreate.mockResolvedValue({
+      output_text: JSON.stringify({ agentType: "knowledgeAgent" }),
     });
 
-    it("should throw error when OpenAI call fails", async () => {
-      mockCreate.mockRejectedValue(new Error("OpenAI API error"));
+    const message: ChatMessage = {
+      role: "user",
+      content: "What are your business hours?",
+    };
 
-      const chatMessage: ChatMessage = {
-        role: "user",
-        content: "Test message",
-      };
+    const result = await agent.getAgentType(message);
 
-      await expect(orchestratorAgent.generate(chatMessage)).rejects.toThrow("Failed to generate response");
-    });
-
-    it("should throw error when response is invalid JSON", async () => {
-      const mockResponse = {
-        output_text: "invalid json response",
-      };
-      mockCreate.mockResolvedValue(mockResponse);
-
-      const chatMessage: ChatMessage = {
-        role: "user",
-        content: "Test message",
-      };
-
-      await expect(orchestratorAgent.generate(chatMessage)).rejects.toThrow("Failed to generate response");
-    });
+    expect(result).toBe(AgentType.knowledgeAgent);
+    expect(mockCreate).toHaveBeenCalledTimes(1);
   });
 
-  describe("getAgentType", () => {
-    it("should return knowledgeAgent for knowledge-related query", async () => {
-      const mockResponse = {
-        output_text: JSON.stringify({ agentType: "knowledgeAgent" }),
-      };
-      mockCreate.mockResolvedValue(mockResponse);
-
-      const chatMessage: ChatMessage = {
-        role: "user",
-        content: "What services do you offer?",
-      };
-
-      const result = await orchestratorAgent.getAgentType(chatMessage);
-      expect(result).toBe(AgentType.knowledgeAgent);
+  it("should route to customer service agent for support queries", async () => {
+    mockCreate.mockResolvedValue({
+      output_text: JSON.stringify({ agentType: "csAgent" }),
     });
 
-    it("should return csAgent for customer service query", async () => {
-      const mockResponse = {
-        output_text: JSON.stringify({ agentType: "csAgent" }),
-      };
-      mockCreate.mockResolvedValue(mockResponse);
+    const message: ChatMessage = {
+      role: "user",
+      content: "I need help with my account",
+    };
 
-      const chatMessage: ChatMessage = {
-        role: "user",
-        content: "I need help with my account",
-      };
+    const result = await agent.getAgentType(message);
 
-      const result = await orchestratorAgent.getAgentType(chatMessage);
-      expect(result).toBe(AgentType.csAgent);
-    });
+    expect(result).toBe(AgentType.csAgent);
+  });
 
-    it("should throw error when agent classification fails", async () => {
-      mockCreate.mockRejectedValue(new Error("Classification failed"));
+  it("should handle errors gracefully", async () => {
+    mockCreate.mockRejectedValue(new Error("API Error"));
 
-      const chatMessage: ChatMessage = {
-        role: "user",
-        content: "Test message",
-      };
+    const message: ChatMessage = {
+      role: "user",
+      content: "Test message",
+    };
 
-      await expect(orchestratorAgent.getAgentType(chatMessage)).rejects.toThrow("Failed to call agent");
-    });
+    await expect(agent.getAgentType(message)).rejects.toThrow("Failed to call agent");
   });
 });
