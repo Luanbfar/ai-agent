@@ -77,6 +77,7 @@ export class AgentsService {
       const agentType = await this.orchestratorAgent.getAgentType(inputData.chatMessage);
       const response = await this.generateResponse(agentType, chatHistory, inputData.chatMessage);
 
+      // Checks if there's ticket data to be added
       const ticket = await this.ticketService.handleTicketCreation(response);
 
       if (ticket === null) {

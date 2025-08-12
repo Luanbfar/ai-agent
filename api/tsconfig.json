@@ -2,7 +2,7 @@
   // Learn more: https://aka.ms/tsconfig
   "compilerOptions": {
     // ========== FILE STRUCTURE ==========
-    "rootDir": "./src", // Source code root
+    // "rootDir": "./src", // Source code root
     "outDir": "./dist", // Compiled JS output
 
     // ========== MODULE & TARGET ==========
@@ -11,7 +11,7 @@
     "moduleResolution": "node", // Resolve modules like Node.js (NOT "bundler")
 
     // ========== NODE & TYPES ==========
-    // "types": ["node"], // Include Node.js types
+    "types": ["node", "jest"], // Include Node.js types
     "allowJs": true, // Allow compiling .js files
     "esModuleInterop": true, // Allow default imports from CommonJS modules
     "allowSyntheticDefaultImports": true, // Allow `import x from 'cjs'` syntax
@@ -37,6 +37,6 @@
     "isolatedModules": true, // Required for tools like Babel/ESBuild
     "moduleDetection": "force" // Force module detection, even without imports
   },
-  "include": ["src/**/*"], // only compile source code
+  "include": ["src/**/*", "tests", "tests/setup.ts"], // only compile source code
   "exclude": ["tools/**/*"] // exclude build tools folde
 }
