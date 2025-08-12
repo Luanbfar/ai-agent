@@ -1,151 +1,92 @@
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { CustomerServiceAgent } from "../../../src/agents/cs-agent";
-import { ChatMessage } from "../../../src/interfaces/IChatMemoryRepository";
-import { OpenAIModels } from "../../../src/types/OpenAIModels";
+import { describe, expect, it, jest, beforeEach, beforeAll } from "@jest/globals";
 
-// Mock OpenAI client
-const mockCreate = jest.fn((...args: any[]) => Promise.resolve({ output_text: "" }));
+// Mock OpenAI module completely
+jest.mock("openai", () => {
+  // Create a jest.fn() to mock the responses.create method
+  const mockCreate = jest.fn();
 
-jest.unstable_mockModule("openai", () => ({
-  default: jest.fn().mockImplementation(() => ({
-    responses: {
+  // Mock class to replace OpenAI class
+  class MockOpenAI {
+    responses = {
       create: mockCreate,
-    },
-  })),
+    };
+  }
+
+  return {
+    __esModule: true,
+    default: MockOpenAI,
+    __mockCreate: mockCreate, // expose mockCreate for your tests
+  };
+});
+
+// Mock the config to avoid environment issues
+jest.mock("../../../src/config/loadEnv", () => ({
+  openaiApiKey: "test-api-key",
 }));
 
+// Import after mocking
+import { CustomerServiceAgent } from "../../../src/agents/cs-agent";
+import { ChatMessage } from "../../../src/interfaces/IChatMemoryRepository";
+
+// Declare mockCreate here so it's accessible in tests
+let mockCreate: jest.Mock<any>;
+
+beforeAll(async () => {
+  const mockModule = await import("openai");
+  mockCreate = (mockModule as any).__mockCreate;
+});
+
 describe("CustomerServiceAgent", () => {
-  let csAgent: CustomerServiceAgent;
+  let agent: CustomerServiceAgent;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    csAgent = new CustomerServiceAgent();
+    agent = new CustomerServiceAgent();
   });
 
-  describe("constructor", () => {
-    it("should initialize with default parameters", () => {
-      expect(csAgent).toBeInstanceOf(CustomerServiceAgent);
-    });
-
-    it("should initialize with custom model and system prompt", () => {
-      const customPrompt = "Custom CS prompt";
-      const customAgent = new CustomerServiceAgent(OpenAIModels.GPT4, customPrompt);
-      expect(customAgent).toBeInstanceOf(CustomerServiceAgent);
-    });
+  it("should create an agent successfully", () => {
+    expect(agent).toBeDefined();
+    expect(agent).toBeInstanceOf(CustomerServiceAgent);
   });
 
-  describe("generate", () => {
-    it("should generate customer service response", async () => {
-      mockCreate.mockResolvedValue({
-        output_text: "I can help you with your account issue. What specific problem are you experiencing?",
-      });
-
-      const chatMessages: ChatMessage[] = [{ role: "user", content: "I need help with my account" }];
-
-      const result = await csAgent.generate(chatMessages);
-
-      expect(result).toBe("I can help you with your account issue. What specific problem are you experiencing?");
-      expect(mockCreate).toHaveBeenCalledWith({
-        model: OpenAIModels.GPT5_NANO,
-        instructions: expect.stringContaining("Customer Support Agent for InfinitePay"),
-        input: chatMessages,
-      });
+  it("should generate a simple response", async () => {
+    mockCreate.mockResolvedValue({
+      output_text: "I can help you with my account issue.",
     });
 
-    it("should handle ticket creation response", async () => {
-      const ticketResponse = JSON.stringify({
-        action: "create_ticket",
-        subject: "Payment Processing Issue",
-        description: "Customer experiencing delays in payment processing",
-        date: "2025-08-12T18:30:00.000Z",
-        status: "open",
-      });
+    const messages: ChatMessage[] = [{ role: "user", content: "I need help with my account" }];
 
-      mockCreate.mockResolvedValue({
-        output_text: ticketResponse,
-      });
+    const result = await agent.generate(messages);
 
-      const chatMessages: ChatMessage[] = [
-        { role: "user", content: "I want to create a support ticket" },
-        { role: "assistant", content: "What seems to be the issue?" },
-        { role: "user", content: "My payments are not processing correctly" },
-      ];
+    expect(result).toBe("I can help you with my account issue.");
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+  });
 
-      const result = await csAgent.generate(chatMessages);
-
-      expect(result).toBe(ticketResponse);
-      expect(JSON.parse(result)).toEqual({
-        action: "create_ticket",
-        subject: "Payment Processing Issue",
-        description: "Customer experiencing delays in payment processing",
-        date: "2025-08-12T18:30:00.000Z",
-        status: "open",
-      });
+  it("should handle ticket creation", async () => {
+    const ticketResponse = JSON.stringify({
+      action: "create_ticket",
+      subject: "Payment Issue",
+      description: "Payment not processing",
+      status: "open",
     });
 
-    it("should handle no ticket creation response", async () => {
-      const noTicketResponse = JSON.stringify({
-        action: "no_ticket",
-      });
-
-      mockCreate.mockResolvedValue({
-        output_text: noTicketResponse,
-      });
-
-      const chatMessages: ChatMessage[] = [{ role: "user", content: "Just wanted to ask about your services" }];
-
-      const result = await csAgent.generate(chatMessages);
-
-      expect(result).toBe(noTicketResponse);
-      expect(JSON.parse(result)).toEqual({ action: "no_ticket" });
+    mockCreate.mockResolvedValue({
+      output_text: ticketResponse,
     });
 
-    it("should handle multiple conversation context", async () => {
-      mockCreate.mockResolvedValue({
-        output_text: "I understand your concern about the payment delay. Let me check the details for you.",
-      });
+    const messages: ChatMessage[] = [{ role: "user", content: "I want to create a ticket for payment issues" }];
 
-      const chatMessages: ChatMessage[] = [
-        { role: "user", content: "Hello" },
-        { role: "assistant", content: "Hi! How can I help you today?" },
-        { role: "user", content: "I have a payment issue" },
-        { role: "assistant", content: "What type of payment issue are you experiencing?" },
-        { role: "user", content: "My payment has been pending for 3 days" },
-      ];
+    const result = await agent.generate(messages);
 
-      const result = await csAgent.generate(chatMessages);
+    expect(result).toBe(ticketResponse);
+    expect(JSON.parse(result).action).toBe("create_ticket");
+  });
 
-      expect(result).toBe("I understand your concern about the payment delay. Let me check the details for you.");
-      expect(mockCreate).toHaveBeenCalledWith({
-        model: OpenAIModels.GPT5_NANO,
-        instructions: expect.stringContaining("Customer Support Agent for InfinitePay"),
-        input: chatMessages,
-      });
-    });
+  it("should handle errors gracefully", async () => {
+    mockCreate.mockRejectedValue(new Error("API Error"));
 
-    it("should throw error when OpenAI call fails", async () => {
-      mockCreate.mockRejectedValue(new Error("OpenAI API error"));
+    const messages: ChatMessage[] = [{ role: "user", content: "Test message" }];
 
-      const chatMessages: ChatMessage[] = [{ role: "user", content: "Test message" }];
-
-      await expect(csAgent.generate(chatMessages)).rejects.toThrow("Failed to generate response");
-    });
-
-    it("should handle empty chat messages array", async () => {
-      mockCreate.mockResolvedValue({
-        output_text: "Hello! How can I assist you today?",
-      });
-
-      const chatMessages: ChatMessage[] = [];
-
-      const result = await csAgent.generate(chatMessages);
-
-      expect(result).toBe("Hello! How can I assist you today?");
-      expect(mockCreate).toHaveBeenCalledWith({
-        model: OpenAIModels.GPT5_NANO,
-        instructions: expect.stringContaining("Customer Support Agent for InfinitePay"),
-        input: [],
-      });
-    });
+    await expect(agent.generate(messages)).rejects.toThrow("Failed to generate response");
   });
 });

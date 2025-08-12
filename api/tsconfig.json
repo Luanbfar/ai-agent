@@ -37,6 +37,6 @@
     "isolatedModules": true, // Required for tools like Babel/ESBuild
     "moduleDetection": "force" // Force module detection, even without imports
   },
-  "include": ["src/**/*", "tests", "tests/setup.ts"], // only compile source code
+  "include": ["src/**/*"], // only compile source code
   "exclude": ["tools/**/*"] // exclude build tools folde
 }
