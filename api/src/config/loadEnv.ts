@@ -21,6 +21,9 @@ const env = cleanEnv(process.env, {
   REDIS_URL: str({
     desc: "The host URL for the Redis client",
   }),
+  MONGODB_URL: str({
+    desc: "The URL for the MongoDB database",
+  }),
 });
 
 export const port = env.PORT;
@@ -29,3 +32,4 @@ export const supabaseUrl = env.SUPABASE_URL;
 export const supabaseApiKey = env.SUPABASE_API_KEY;
 export const redisPassword = env.REDIS_PASSWORD;
 export const redisURL = env.REDIS_URL;
+export const mongoURL = env.MONGODB_URL;
