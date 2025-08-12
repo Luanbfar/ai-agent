@@ -24,7 +24,9 @@
     "envalid": "^8.1.0",
     "express": "^5.1.0",
     "langchain": "^0.3.30",
-    "openai": "^4.104.0"
+    "openai": "^4.104.0",
+    "redis": "^5.8.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
