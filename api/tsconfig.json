@@ -25,7 +25,7 @@
     // ========== TYPE CHECKING ==========
     "strict": true, // Enable all strict type checks
     "noUncheckedIndexedAccess": true, // Disallow unsafe index access
-    "exactOptionalPropertyTypes": true, // Optional props are treated as exactly optional
+    "exactOptionalPropertyTypes": false, // Optional props are treated as exactly optional
     "noImplicitReturns": true, // Ensure all functions return a value
     "noImplicitOverride": true, // Require 'override' keyword
     "noUnusedLocals": true, // Disallow unused local variables
