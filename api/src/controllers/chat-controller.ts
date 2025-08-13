@@ -42,6 +42,6 @@ export async function handleChatRequest(req: Request, res: Response): Promise<vo
     res.json(response);
   } catch (error) {
     console.error(error);
-    res.status(500).send(error);
+    res.status(500).send("An internal error occured.");
   }
 }
