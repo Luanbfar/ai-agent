@@ -46,9 +46,6 @@
     "extensionsToTreatAsEsm": [
       ".ts"
     ],
-    "moduleNameMapping": {
-      "^(\\.{1,2}/.*)\\.js$": "$1"
-    },
     "testEnvironment": "node",
     "setupFilesAfterEnv": [
       "<rootDir>/tests/setup.ts"

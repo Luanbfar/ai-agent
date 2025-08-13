@@ -1,4 +1,3 @@
-// tests/setup.ts
 import { jest } from "@jest/globals";
 
 // Mock environment variables for tests

@@ -6,7 +6,16 @@ jest.mock("node-fetch", () => ({
 }));
 
 jest.mock("../../../src/rag/document-loader", () => ({
-  default: jest.fn(),
+  __esModule: true,
+  default: jest.fn(async () => {
+    const { mockHtmlPage } = await import("../../mocks/sample-page.html");
+    return [
+      {
+        pageContent: mockHtmlPage,
+        metadata: { source: "https://help.infinitepay.com/business-hours" },
+      },
+    ];
+  }),
 }));
 
 jest.mock("../../../src/rag/vector-store", () => ({
@@ -36,7 +45,7 @@ beforeAll(async () => {
   similaritySearchMock = vectorStore.default.similaritySearch as jest.Mock;
 });
 
-describe("DocumentRetriever", () => {
+describe("RAG Pipeline", () => {
   let retriever: DocumentRetriever;
 
   beforeEach(() => {
@@ -54,6 +63,19 @@ describe("DocumentRetriever", () => {
     expect(retriever).toBeInstanceOf(DocumentRetriever);
   });
 
+  it("should retrieve information from the mocked HTML page", async () => {
+    // Make documents stale so loader runs
+    isDocumentUpToDateMock.mockResolvedValue(false);
+
+    similaritySearchMock.mockResolvedValue([
+      { pageContent: "Our customer support is available Monday to Friday from 9:00 AM to 6:00 PM (BRT)." },
+    ]);
+
+    const result = await retriever.retrieve("What are your business hours?");
+
+    expect(result.context[0].pageContent).toMatch(/Monday to Friday from 9:00 AM to 6:00 PM/);
+  });
+
   it("should retrieve documents when up to date", async () => {
     isDocumentUpToDateMock.mockResolvedValue(true);
     similaritySearchMock.mockResolvedValue([{ pageContent: "InfinitePay business hours information" }]);
@@ -62,6 +84,31 @@ describe("DocumentRetriever", () => {
 
     expect(result).toEqual({
       context: [{ pageContent: "InfinitePay business hours information" }],
+    });
+  });
+
+  it("should call similaritySearch with correct question and limit", async () => {
+    // Ensure no refresh is triggered
+    isDocumentUpToDateMock.mockResolvedValue(true);
+
+    // Mock similarity search returning fake docs
+    similaritySearchMock.mockResolvedValue([
+      { pageContent: "InfinitePay supports payments via credit card." },
+      { pageContent: "Business hours are Monday to Friday, 9am–6pm BRT." },
+    ]);
+
+    const result = await retriever.retrieve("What payment methods do you support?");
+
+    // Verify similarity search was called correctly
+    expect(similaritySearchMock).toHaveBeenCalledTimes(1);
+    expect(similaritySearchMock).toHaveBeenCalledWith("What payment methods do you support?", 5);
+
+    // Verify returned context
+    expect(result).toEqual({
+      context: [
+        { pageContent: "InfinitePay supports payments via credit card." },
+        { pageContent: "Business hours are Monday to Friday, 9am–6pm BRT." },
+      ],
     });
   });
 

@@ -15,7 +15,7 @@ jest.mock("openai", () => {
   return {
     __esModule: true,
     default: MockOpenAI,
-    __mockCreate: mockCreate, // expose mockCreate for your tests
+    __mockCreate: mockCreate, // expose mockCreate for tests
   };
 });
 
@@ -89,5 +89,19 @@ describe("OrchestratorAgent", () => {
     };
 
     await expect(agent.getAgentType(message)).rejects.toThrow("Failed to call agent");
+  });
+
+  it("should handle malformed JSON responses gracefully", async () => {
+    // Simulate OpenAI returning invalid JSON
+    mockCreate.mockResolvedValue({
+      output_text: "not-a-valid-json",
+    });
+
+    const message: ChatMessage = {
+      role: "user",
+      content: "Tell me something random",
+    };
+
+    await expect(agent.getAgentType(message)).rejects.toThrow(/Unexpected token|Failed to call agent/i);
   });
 });

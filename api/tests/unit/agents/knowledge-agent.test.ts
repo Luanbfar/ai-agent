@@ -15,7 +15,7 @@ jest.mock("openai", () => {
   return {
     __esModule: true,
     default: MockOpenAI,
-    __mockCreate: mockCreate, // expose mockCreate for your tests
+    __mockCreate: mockCreate, // expose mockCreate for tests
   };
 });
 

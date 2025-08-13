@@ -26,7 +26,7 @@ import { TicketService } from "./tickets-service";
  * ```typescript
  * const service = new AgentsService();
  * const response = await service.handleUserQuery({
- *   sessionId: 'user-123',
+ *   userId: 'user-123',
  *   chatMessage: { role: 'user', content: 'What are your business hours?' }
  * });
  * ```
@@ -65,13 +65,13 @@ export class AgentsService {
   /**
    * Main entry point for handling user queries
    *
-   * @param inputData - User input containing message and optional sessionId
-   * @returns Promise with sessionId and generated response
+   * @param inputData - User input containing message and optional userId
+   * @returns Promise with userId and generated response
    */
   async handleUserQuery(inputData: InputData) {
     try {
-      const sessionId = await this.resolvesessionId(inputData.sessionId);
-      const chatHistory = await this.getChatHistory(sessionId);
+      const userId = await this.resolveuserId(inputData.userId);
+      const chatHistory = await this.getChatHistory(userId);
 
       // Route query to appropriate agent
       const agentType = await this.orchestratorAgent.getAgentType(inputData.chatMessage);
@@ -85,12 +85,12 @@ export class AgentsService {
         const enhancedResponse = await this.enhancePersonality(inputData.chatMessage, response);
 
         // Persist conversation
-        await this.saveConversation(sessionId, inputData.chatMessage, enhancedResponse);
+        await this.saveConversation(userId, inputData.chatMessage, enhancedResponse);
 
-        return { sessionId, response: enhancedResponse };
+        return { userId, response: enhancedResponse };
       }
       const ticketResponse = ticket.response;
-      return { sessionId, ticketResponse };
+      return { userId, ticketResponse };
     } catch (error) {
       console.error("AgentsService.handleUserQuery:", error);
       throw new Error("Error processing the user's request.");
@@ -98,18 +98,18 @@ export class AgentsService {
   }
 
   /**
-   * Resolve or generate session ID for session management
+   * Resolve or generate user ID for session management
    */
-  private async resolvesessionId(sessionId?: string): Promise<string> {
-    return sessionId && sessionId.trim().length > 0 ? sessionId : uuidv4();
+  private async resolveuserId(userId?: string): Promise<string> {
+    return userId && userId.trim().length > 0 ? userId : uuidv4();
   }
 
   /**
    * Retrieve chat history for session
    */
-  private async getChatHistory(sessionId: string): Promise<ChatMessage[]> {
+  private async getChatHistory(userId: string): Promise<ChatMessage[]> {
     try {
-      return await this.chatMemoryRepo.getConversation(sessionId);
+      return await this.chatMemoryRepo.getConversation(userId);
     } catch (error) {
       console.error("Failed to retrieve chat history:", error);
       return []; // Graceful degradation
@@ -149,14 +149,10 @@ export class AgentsService {
   /**
    * Save conversation to memory
    */
-  private async saveConversation(
-    sessionId: string,
-    userMessage: ChatMessage,
-    assistantResponse: string
-  ): Promise<void> {
+  private async saveConversation(userId: string, userMessage: ChatMessage, assistantResponse: string): Promise<void> {
     try {
-      await this.chatMemoryRepo.appendMessage(sessionId, userMessage);
-      await this.chatMemoryRepo.appendMessage(sessionId, {
+      await this.chatMemoryRepo.appendMessage(userId, userMessage);
+      await this.chatMemoryRepo.appendMessage(userId, {
         role: "assistant",
         content: assistantResponse,
       });
@@ -176,7 +172,7 @@ export class AgentsService {
   /**
    * Clear conversation history for a session
    */
-  public async clearUserHistory(sessionId: string): Promise<void> {
-    await this.chatMemoryRepo.clearConversation(sessionId);
+  public async clearUserHistory(userId: string): Promise<void> {
+    await this.chatMemoryRepo.clearConversation(userId);
   }
 }
