@@ -1,304 +1,268 @@
-# AI Agent Project Documentation
+# AI Agent System
 
-## Overview
-
-This is a TypeScript-based AI agent system that orchestrates multiple specialized AI agents to handle user queries intelligently. The system uses OpenAI's API, Redis for conversation memory, and Supabase for vector storage to provide contextual responses.
+A TypeScript-based multi-agent system for InfinitePay that intelligently routes user queries through specialized AI agents with RAG-enhanced knowledge retrieval.
 
 ## Architecture
 
-```
-User Request → Express API → AgentsService → Orchestrator → Specialized Agent → Personality Agent → Response
-                                ↓
-                           Redis Memory
-                                ↓
-                        RAG (Supabase Vector Store)
-```
-
-## Project Structure
+The system implements a microservice-like agent architecture where each agent has a specific responsibility:
 
 ```
-api/
-├── src/
-│   ├── agents/           # AI agent implementations
-│   │   ├── agent.ts      # Base abstract agent class
-│   │   ├── cs-agent.ts   # Customer service agent
-│   │   ├── knowledge-agent.ts # Knowledge retrieval agent
-│   │   ├── orchestrator-agent.ts # Agent routing logic
-│   │   ├── personality-agent.ts # Response personality enhancement
-│   │   └── prompts.ts    # System prompts for all agents
-│   ├── app/
-│   │   └── app.ts        # Express application setup
-│   ├── config/           # Configuration and environment
-│   │   ├── loadEnv.ts    # Environment variable validation
-│   │   └── urls.ts       # InfinitePay URLs for RAG
-│   ├── controllers/      # HTTP request handlers
-│   │   └── chat-controller.ts
-│   ├── database/         # Database connections
-│   │   └── redis.ts      # Redis client configuration
-│   ├── interfaces/       # TypeScript interfaces
-│   │   └── IChatMemoryRepository.ts
-│   ├── rag/             # Retrieval Augmented Generation
-│   │   ├── document-loader.ts  # HTML parsing and chunking
-│   │   ├── embedder.ts         # OpenAI embeddings
-│   │   ├── retriever.ts        # Document retrieval logic
-│   │   └── vector-store.ts     # Supabase vector store
-│   ├── repositories/     # Data access layer
-│   │   └── RedisChatMemory.ts
-│   ├── routers/         # Express route definitions
-│   │   └── chat-router.ts
-│   ├── services/        # Business logic
-│   │   └── agents-service.ts
-│   ├── types/           # TypeScript type definitions
-│   │   ├── AgentType.ts
-│   │   ├── InputData.ts
-│   │   └── OpenAIModels.ts
-│   └── utils/
-│       └── log.ts       # Document update logging
-├── tools/
-│   └── compile.js       # Post-build ES module fix
-├── logs/                # Application logs
-└── package.json
+Request → Orchestrator Agent → [Knowledge Agent | CS Agent] → Personality Agent → Response
+                                        ↓
+                               RAG Pipeline (Supabase)
+                                        ↓
+                              Redis Memory & MongoDB Tickets
 ```
 
 ## Core Components
 
-### 1. Agents System
+### Agent System
 
-#### Base Agent (`agents/agent.ts`)
-Abstract base class for all AI agents providing:
-- OpenAI client initialization
-- Model configuration
-- System prompt management
+**Base Agent (`src/agents/agent.ts`)**
+Abstract class providing OpenAI client initialization and common functionality for all specialized agents.
 
-#### Specialized Agents
+**Orchestrator Agent (`src/agents/orchestrator-agent.ts`)**
+Routes incoming queries to appropriate specialized agents based on intent analysis. Returns structured JSON decisions.
 
-**Customer Service Agent** (`cs-agent.ts`)
-- Handles customer support inquiries
-- Uses customer service-specific prompts
-- Direct response generation
+**Knowledge Agent (`src/agents/knowledge-agent.ts`)**
+Handles information retrieval queries using RAG pipeline integration. Augments responses with real-time document context from InfinitePay's website.
 
-**Knowledge Agent** (`knowledge-agent.ts`)
-- Handles information retrieval queries
-- Integrates with RAG system
-- Augments responses with retrieved context
+**Customer Service Agent (`src/agents/cs-agent.ts`)**
+Processes customer support requests and generates structured ticket data when required.
 
-**Orchestrator Agent** (`orchestrator-agent.ts`)
-- Routes queries to appropriate agents
-- Returns JSON with agent type decisions
-- Central routing logic
+**Personality Agent (`src/agents/personality-agent.ts`)**
+Post-processes all responses to ensure consistent brand voice and tone alignment.
 
-**Personality Agent** (`personality-agent.ts`)
-- Post-processes responses for consistent tone
-- Aligns with InfinitePay brand voice
-- Final response enhancement
+### RAG Pipeline
 
-### 2. RAG (Retrieval Augmented Generation) System
+**Document Retriever (`src/rag/retriever.ts`)**
 
-#### Document Retriever (`rag/retriever.ts`)
-- Fetches and processes InfinitePay URLs
-- Manages document freshness (24-hour cache)
-- Provides contextual information to knowledge agent
+- Fetches HTML content from configured URLs
+- Implements 24-hour document freshness validation
+- Manages vector store updates and similarity searches
 
-#### Components:
-- **Document Loader**: Parses HTML and creates text chunks
-- **Embedder**: Generates vector embeddings using OpenAI
-- **Vector Store**: Stores and retrieves similar documents via Supabase
+**Vector Store (`src/rag/vector-store.ts`)**
+Supabase-backed vector storage using OpenAI embeddings for semantic document retrieval.
 
-### 3. Memory System
+**Document Loader (`src/rag/document-loader.ts`)**
+Processes HTML content into chunked documents using LangChain's RecursiveCharacterTextSplitter (1000 char chunks, 200 overlap).
 
-#### Redis Chat Memory (`repositories/RedisChatMemory.ts`)
-- Stores conversation history per user
-- Automatically trims to last 50 messages
-- 7-day expiration for conversations
-- Supports conversation retrieval and clearing
+### Data Persistence
 
-### 4. Service Layer
+**Redis Chat Memory (`src/repositories/RedisChatMemory.ts`)**
 
-#### Agents Service (`services/agents-service.ts`)
-Central orchestration service that:
-- Manages user sessions and conversation flow
-- Routes queries through the agent pipeline
-- Handles memory persistence
-- Provides error handling and recovery
+- Stores conversation history per user session
+- Automatic trimming to 50 messages per session
+- 7-day TTL with automatic expiration
 
-## API Endpoints
+**MongoDB Tickets (`src/repositories/MongoTicket.ts`)**
+Persistent storage for customer support tickets with CRUD operations.
 
-### POST /chat
+## API Interface
 
-Handles user chat interactions.
+### POST /api/chat
 
-**Request Body:**
-```json
-{
-  "chatInput": "What are your business hours?",
-  "userId": "optional-user-id"
+```typescript
+interface ChatRequest {
+  chatInput: string;
+  userId?: string;
+}
+
+interface ChatResponse {
+  userId: string;
+  response: string;
+}
+
+interface TicketResponse {
+  userId: string;
+  ticketResponse: string;
 }
 ```
 
-**Response:**
-```json
-{
-  "userId": "generated-or-provided-user-id",
-  "response": "Our business hours are 9 AM to 6 PM, Monday through Friday."
-}
+## Testing Strategy
+
+### Unit Tests (`tests/unit/`)
+
+Each agent is tested in isolation with mocked dependencies:
+
+- **Agent Initialization**: Validates proper OpenAI client setup and configuration
+- **Response Generation**: Tests core functionality with controlled inputs/outputs
+- **Error Handling**: Validates graceful degradation when external services fail
+- **JSON Parsing**: Ensures structured responses (orchestrator routing, ticket creation)
+
+### End-to-End Tests (`tests/e2e/`)
+
+Full system integration testing:
+
+- **Complete Agent Pipeline**: Request → Orchestrator → Specialist → Personality → Response
+- **RAG Integration**: Knowledge agent with document retrieval and context augmentation
+- **Ticket Creation**: Full customer service workflow from query to ticket persistence
+- **Error Scenarios**: API failures, malformed responses, and system recovery
+
+### Test Implementation
+
+```bash
+npm test           # All tests
+npm run test:unit  # Unit tests only
+npm run test:e2e   # E2E tests only
+npm run test:coverage  # Coverage report
 ```
+
+**Mock Strategy**: External dependencies (OpenAI, Redis, MongoDB, Supabase) are mocked to ensure deterministic test execution and eliminate external service dependencies.
 
 ## Configuration
 
 ### Environment Variables
 
-Required environment variables (defined in `config/loadEnv.ts`):
-
 ```bash
-# Server
 PORT=3000
-
-# OpenAI
 OPENAI_API_KEY=sk-...
-
-# Supabase (Vector Store)
 SUPABASE_URL=https://...
-SUPABASE_API_KEY=eyJ...
-
-# Redis (Chat Memory)
+SUPABASE_API_KEY=...
 REDIS_PASSWORD=...
-REDIS_URL=redis-host.com
+REDIS_URL=...
+MONGODB_URL=...
 ```
 
-### Agent Prompts
+### System Prompts (`src/agents/prompts.ts`)
 
-All system prompts are centralized in `agents/prompts.ts`:
+- **Knowledge Agent**: 3-sentence maximum responses with conciseness focus
+- **Orchestrator**: JSON-only responses for agent type classification
+- **Customer Service**: Structured ticket creation with InfinitePay context
+- **Personality**: Brand voice consistency without pleasantries
 
-- **Knowledge Agent**: 3-sentence max, concise answers
-- **Customer Service**: Professional InfinitePay support tone
-- **Orchestrator**: JSON response format for agent routing
-- **Personality**: Consistent brand voice enhancement
+## Installation & Development
 
-## Data Flow
+### Local Development
 
-### 1. Query Processing Flow
-
-```
-1. User sends message via POST /chat
-2. AgentsService.handleUserQuery() processes:
-   a. Resolve/generate userId
-   b. Retrieve conversation history from Redis
-   c. Orchestrator determines appropriate agent
-   d. Selected agent generates response (with RAG if knowledge agent)
-   e. Personality agent enhances response tone
-   f. Save conversation to Redis
-   g. Return response to user
-```
-
-### 2. Knowledge Retrieval Flow (RAG)
-
-```
-1. Knowledge agent receives query
-2. DocumentRetriever checks document freshness
-3. If stale, fetches latest content from InfinitePay URLs
-4. Processes HTML → chunks → embeddings → Supabase
-5. Performs similarity search for relevant context
-6. Augments user query with retrieved context
-7. Generates contextual response
-```
-
-## Key Features
-
-### 🤖 Intelligent Agent Routing
-- Automatically determines whether queries need knowledge retrieval or customer service
-- JSON-based routing decisions for reliability
-
-### 💾 Persistent Conversations
-- Redis-backed conversation memory
-- Automatic message limiting and expiration
-- Session continuity across interactions
-
-### 🔍 RAG-Enhanced Knowledge
-- Real-time document synchronization from InfinitePay
-- Vector similarity search for relevant context
-- Automatic freshness checks with 24-hour cache
-
-### 🎭 Consistent Personality
-- Post-processing for brand-aligned responses
-- Professional, helpful tone maintenance
-- Configurable personality enhancement
-
-### ⚡ Performance Optimizations
-- Document caching to reduce API calls
-- Efficient Redis operations
-- Modular agent architecture
-
-## Development
-
-### Prerequisites
-- Node.js 18+
-- TypeScript
-- Redis instance
-- Supabase account
-- OpenAI API key
-
-### Setup
 ```bash
-# Install dependencies
+# Dependencies
 npm install
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your credentials
-
-# Development
+# Development with hot reload
 npm run dev
 
-# Build
-npm run build
+# Run tests
+npm test
+
+# Production build
+npm run build && npm start
+```
+
+### Docker Deployment
+
+**File Structure:**
+
+```
+your-project/
+├── Dockerfile
+├── .dockerignore
+└── api/
+    ├── .env          # Your environment variables
+    ├── src/
+    └── package.json
+```
+
+**Commands:**
+
+```bash
+# Test
+docker build -t ai-agent:test --target test .
+docker run --rm ai-agent:test
+
+# Development (with volume mounting for hot reload)
+docker build -t ai-agent:dev --target dev .
+docker run -p 3000:3000 -v $(pwd)/api/src:/app/src ai-agent:dev
 
 # Production
-npm start
+docker build -t ai-agent:prod --target prod .
+docker run -p 3000:3000 ai-agent:prod
 ```
 
 ### ES Modules Configuration
 
-The project uses ES modules with specific TypeScript configuration:
+The project uses ES modules with TypeScript. Key configurations:
+
 - `"type": "module"` in package.json
-- Custom build tool (`tools/compile.js`) adds `.js` extensions
+- Post-build compilation tool (`tools/compile.js`) adds `.js` extensions
 - Top-level await support for Redis connection
+
+## Document Management
+
+### Automatic Updates
+
+- 24-hour freshness checks for InfinitePay website content
+- Configurable URL list in `src/config/urls.ts`
+- Automatic vector store synchronization
+- Update logging in `logs/document_chunks.log`
+
+### Performance Optimizations
+
+- Document caching to minimize API calls
+- Efficient vector similarity search (5 documents max)
+- Automatic conversation memory trimming
+- Redis connection pooling
 
 ## Error Handling
 
 ### Graceful Degradation
-- Agent failures don't crash the system
-- Memory persistence failures are non-blocking
-- RAG failures fall back to basic responses
-- Comprehensive error logging throughout
 
-### Error Types
-- **Agent Routing Errors**: Unknown agent types
-- **Memory Errors**: Redis connection issues
-- **RAG Errors**: Document fetch/processing failures
-- **API Errors**: OpenAI API failures
-
-## Monitoring
+- Agent routing failures default to customer service
+- RAG pipeline failures return basic responses
+- Memory persistence errors are non-blocking
+- OpenAI API failures return structured error responses
 
 ### Logging
+
 - Document update logs in `logs/document_chunks.log`
 - Console error logging for debugging
-- Automatic log rotation and cleanup
-
-### Health Checks
-- Document freshness validation
-- Redis connection monitoring
-- API endpoint availability
 
 ## Deployment Considerations
 
-### Production Setup
-1. Configure environment variables
-2. Set up Redis instance with persistence
-3. Configure Supabase project with vector extensions
-4. Set up proper logging and monitoring
-5. Consider rate limiting for OpenAI API
+### Infrastructure Requirements
+
+- Node.js 22+
+- Redis instance
+- MongoDB database
+- Supabase project with vector extensions
+- OpenAI API access
 
 ### Scaling
-- Stateless service design allows horizontal scaling
+
+- Stateless service design supports horizontal scaling
 - Redis handles distributed session management
 - Supabase provides managed vector store scaling
+- MongoDB supports replica sets for high availability
+
+### Performance Tuning
+
+- Configure Redis memory policies for conversation data
+- Optimize vector store index parameters
+- Implement connection pooling for databases
+- Set appropriate OpenAI API rate limits
+
+## Production Deployment
+
+### Monitoring
+
+- Document update logs in `logs/document_chunks.log`
+- Console error logging for debugging
+- Basic service availability through container health checks
+
+## Technical Decisions
+
+### Agent Architecture
+
+Multi-agent design provides better maintainability and testing isolation compared to monolithic AI approaches. Each agent can be developed, tested, and scaled independently.
+
+### RAG Implementation
+
+Real-time document retrieval ensures accuracy over pre-trained knowledge, critical for customer-facing applications where information changes frequently.
+
+### Memory Strategy
+
+Redis provides fast session storage with automatic expiration, balancing performance with resource management for high-volume conversations.
+
+### Testing Approach
+
+Comprehensive mocking enables reliable CI/CD pipelines while E2E tests validate real-world system behavior without external service dependencies.
