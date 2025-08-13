@@ -40,9 +40,8 @@ WORKDIR /app
 COPY api/package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
-# Copy built application and .env
+# Copy built application
 COPY --from=build /app/dist ./dist
-COPY api/.env .env
 
 # Create logs directory
 RUN mkdir -p logs
