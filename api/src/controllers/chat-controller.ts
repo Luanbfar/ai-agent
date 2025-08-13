@@ -13,19 +13,19 @@ const agentsService = new AgentsService();
  *
  * @param {Request} req - Express request object.
  *   Expects JSON body with:
- *     - sessionId: string | undefined, optional user session ID
+ *     - userId: string | undefined, optional user ID
  *     - chatInput: string, required user message content
  *
  * @param {Response} res - Express response object.
  *   Sends JSON response containing:
- *     - userId: string, session ID used (new or existing)
+ *     - userId: string, user ID used (new or existing)
  *     - response: string, AI-generated message
  *
  * @returns {Promise<void>}
  */
 export async function handleChatRequest(req: Request, res: Response): Promise<void> {
   try {
-    const { sessionId, chatInput } = req.body;
+    const { userId, chatInput } = req.body;
 
     if (!chatInput) {
       res.status(400).json({ error: "Message is required" });
@@ -33,7 +33,7 @@ export async function handleChatRequest(req: Request, res: Response): Promise<vo
     }
 
     const chatMessage: ChatMessage = { role: "user", content: chatInput };
-    const data: InputData = { sessionId, chatMessage };
+    const data: InputData = { userId, chatMessage };
 
     // Send chat input and session info to AI agents service
     const response = await agentsService.handleUserQuery(data);

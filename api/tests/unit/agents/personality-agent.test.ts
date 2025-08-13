@@ -15,7 +15,7 @@ jest.mock("openai", () => {
   return {
     __esModule: true,
     default: MockOpenAI,
-    __mockCreate: mockCreate, // expose mockCreate for your tests
+    __mockCreate: mockCreate, // expose mockCreate for tests
   };
 });
 
@@ -27,7 +27,7 @@ jest.mock("../../../src/config/loadEnv", () => ({
 import { PersonalityAgent } from "../../../src/agents/personality-agent";
 import { ChatMessage } from "../../../src/interfaces/IChatMemoryRepository";
 
-let mockCreate: jest.Mock<any>; // <-- Explicit typing here
+let mockCreate: jest.Mock<any>;
 
 beforeAll(async () => {
   const openaiModule = await import("openai");

@@ -18,22 +18,22 @@ export class RedisChatMemory implements IChatMemoryRepository {
   }
 
   /**
-   * Generates the Redis key for storing chat history by session ID.
-   * @param sessionId - Unique session identifier.
+   * Generates the Redis key for storing chat history by user ID.
+   * @param userId - Unique user session identifier.
    * @returns Redis key string.
    */
-  private getKey(sessionId: string): string {
-    return `chat:memory:${sessionId}`;
+  private getKey(userId: string): string {
+    return `chat:memory:${userId}`;
   }
 
   /**
    * Appends a chat message to the Redis list for the given session.
    * Keeps the list trimmed to the configured memory limit and sets expiration.
-   * @param sessionId - Unique session identifier.
+   * @param userId - Unique user session identifier.
    * @param message - Chat message to append.
    */
-  async appendMessage(sessionId: string, message: ChatMessage): Promise<void> {
-    const key = this.getKey(sessionId);
+  async appendMessage(userId: string, message: ChatMessage): Promise<void> {
+    const key = this.getKey(userId);
     await this.redisClient.rPush(key, JSON.stringify(message));
     await this.redisClient.lTrim(key, -this.CHAT_MEMORY_LIMIT, -1);
     await this.redisClient.expire(key, 60 * 60 * 24 * 7); // Expire after 7 days
@@ -41,22 +41,22 @@ export class RedisChatMemory implements IChatMemoryRepository {
 
   /**
    * Retrieves the most recent chat messages for a given session.
-   * @param sessionId - Unique session identifier.
+   * @param userId - Unique user session identifier.
    * @param limit - Maximum number of messages to retrieve (default 50).
    * @returns Array of chat messages in order from oldest to newest.
    */
-  async getConversation(sessionId: string, limit: number = this.CHAT_MEMORY_LIMIT): Promise<ChatMessage[]> {
-    const key = this.getKey(sessionId);
+  async getConversation(userId: string, limit: number = this.CHAT_MEMORY_LIMIT): Promise<ChatMessage[]> {
+    const key = this.getKey(userId);
     const messages = await this.redisClient.lRange(key, -limit, -1);
     return messages.map((msg) => JSON.parse(msg));
   }
 
   /**
    * Clears the entire chat history for the specified session.
-   * @param sessionId - Unique session identifier.
+   * @param userId - Unique user session identifier.
    */
-  async clearConversation(sessionId: string): Promise<void> {
-    const key = this.getKey(sessionId);
+  async clearConversation(userId: string): Promise<void> {
+    const key = this.getKey(userId);
     await this.redisClient.del(key);
   }
 }
