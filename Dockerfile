@@ -5,7 +5,7 @@ COPY api/package*.json ./
 
 # Dependencies
 FROM base AS deps
-RUN npm ci
+RUN npm ci --omit=optional
 
 # Build stage
 FROM deps AS build
@@ -38,7 +38,7 @@ WORKDIR /app
 
 # Install only production dependencies
 COPY api/package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev --omit=optional && npm cache clean --force
 
 # Copy built application
 COPY --from=build /app/dist ./dist
