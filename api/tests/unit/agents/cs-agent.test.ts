@@ -25,8 +25,8 @@ jest.mock("../../../src/config/loadEnv", () => ({
 }));
 
 // Import after mocking
-import { CustomerServiceAgent } from "../../../src/agents/cs-agent";
-import { ChatMessage } from "../../../src/interfaces/IChatMemoryRepository";
+import { CustomerServiceAgent } from "../../../src/agents/cs-agent.ts";
+import type { ChatMessage } from "../../../src/interfaces/IChatMemoryRepository.ts";
 
 // Declare mockCreate here so it's accessible in tests
 let mockCreate: jest.Mock<any>;

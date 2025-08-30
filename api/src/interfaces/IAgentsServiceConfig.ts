@@ -1,5 +1,5 @@
-import { OpenAIModels } from "../types/OpenAIModels";
-import { IChatMemoryRepository } from "./IChatMemoryRepository";
+import { OpenAIModels } from '../types/OpenAIModels.ts';
+import type { IChatMemoryRepository } from './IChatMemoryRepository.ts';
 
 /**
  * Configuration interface for AgentsService initialization

@@ -1,10 +1,10 @@
 import { Document } from "langchain/document";
 import fetch from "node-fetch";
-import { infinitePayUrls } from "../config/urls";
-import processDocument from "./document-loader";
-import vectorStore from "./vector-store";
-import { isDocumentUpToDate, logDocumentUpdate } from "../utils/log";
-import { ContextObject } from "../types/ContextObject";
+import { infinitePayUrls } from '../config/urls.ts';
+import processDocument from './document-loader.ts';
+import vectorStore from './vector-store.ts';
+import { isDocumentUpToDate, logDocumentUpdate } from '../utils/log.ts';
+import type { ContextObject } from '../types/ContextObject.ts';
 
 /**
  * Class responsible for fetching, processing, and retrieving documents

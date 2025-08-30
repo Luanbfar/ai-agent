@@ -1,7 +1,7 @@
 import express from "express";
 import type { Request, Response } from "express";
 import cors from "cors";
-import router from "../routers/chat-router";
+import router from '../routers/chat-router.ts';
 
 const app = express();
 

@@ -1,7 +1,7 @@
-import { ChatMessage } from "../interfaces/IChatMemoryRepository";
-import { OpenAIModels } from "../types/OpenAIModels";
-import { Agent } from "./agent";
-import { csAgentInstruction } from "./prompts";
+import type { ChatMessage } from '../interfaces/IChatMemoryRepository.ts';
+import { OpenAIModels } from '../types/OpenAIModels.ts';
+import { Agent } from './agent.ts';
+import { csAgentInstruction } from './prompts.ts';
 
 /**
  * CustomerServiceAgent uses OpenAI to generate responses tailored

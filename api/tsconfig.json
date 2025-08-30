@@ -1,42 +1,31 @@
 {
-  // Learn more: https://aka.ms/tsconfig
+  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    // ========== FILE STRUCTURE ==========
-    // "rootDir": "./src", // Source code root
-    "outDir": "./dist", // Compiled JS output
+    // File Layout
+    "rootDir": "src",
+    "outDir": "dist", // Environment Settings // See also https://aka.ms/tsconfig/module
 
-    // ========== MODULE & TARGET ==========
-    "module": "esnext", // Use modern ES module syntax (import/export)
-    "target": "esnext", // Target latest JS features (required for top-level await)
-    "moduleResolution": "node", // Resolve modules like Node.js (NOT "bundler")
+    "module": "nodenext",
+    "target": "esnext", // "types": [], // For nodejs:
+    "lib": ["esnext"],
+    "types": ["node"], // and npm install -D @types/node // Other Outputs
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true, // Stricter Typechecking Options
 
-    // ========== NODE & TYPES ==========
-    "types": ["node", "jest"], // Include Node.js types
-    "allowJs": true, // Allow compiling .js files
-    "esModuleInterop": true, // Allow default imports from CommonJS modules
-    "allowSyntheticDefaultImports": true, // Allow `import x from 'cjs'` syntax
-    "skipLibCheck": true, // Skip type checking of declaration files
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true, // Style Options // "noImplicitReturns": true, // "noImplicitOverride": true, // "noUnusedLocals": true, // "noUnusedParameters": true, // "noFallthroughCasesInSwitch": true, // "noPropertyAccessFromIndexSignature": true, // Recommended Options
 
-    // ========== OUTPUT OPTIONS ==========
-    "sourceMap": true, // Generate source maps
-    "declaration": true, // Emit .d.ts type declarations
-    "declarationMap": true, // Source maps for declarations
-
-    // ========== TYPE CHECKING ==========
-    "strict": true, // Enable all strict type checks
-    "noUncheckedIndexedAccess": true, // Disallow unsafe index access
-    "exactOptionalPropertyTypes": false, // Optional props are treated as exactly optional
-    "noImplicitReturns": true, // Ensure all functions return a value
-    "noImplicitOverride": true, // Require 'override' keyword
-    "noUnusedLocals": true, // Disallow unused local variables
-    "noUnusedParameters": true, // Disallow unused function params
-    "noFallthroughCasesInSwitch": true, // Prevent accidental fallthrough
-    "noPropertyAccessFromIndexSignature": true, // More strict property access
-
-    // ========== MODULE BEHAVIOR ==========
-    "isolatedModules": true, // Required for tools like Babel/ESBuild
-    "moduleDetection": "force" // Force module detection, even without imports
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+    "moduleResolution": "nodenext",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "rewriteRelativeImportExtensions": true
   },
-  "include": ["src/**/*"], // only compile source code
-  "exclude": ["tools/**/*"] // exclude build tools folde
+  "include": ["src"]
 }

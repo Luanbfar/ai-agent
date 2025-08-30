@@ -1,5 +1,5 @@
 import { OpenAIEmbeddings } from "@langchain/openai";
-import { openaiApiKey } from "../config/loadEnv";
+import { openaiApiKey } from '../config/loadEnv.ts';
 
 /**
  * OpenAI embeddings instance configured to use the 'text-embedding-3-small' model.

@@ -1,16 +1,16 @@
-import { Agent } from "../agents/agent";
-import { CustomerServiceAgent } from "../agents/cs-agent";
-import { KnowledgeAgent } from "../agents/knowledge-agent";
-import { OrchestratorAgent } from "../agents/orchestrator-agent";
-import { PersonalityAgent } from "../agents/personality-agent";
-import { IAgentsServiceConfig } from "../interfaces/IAgentsServiceConfig";
-import { ChatMessage, IChatMemoryRepository } from "../interfaces/IChatMemoryRepository";
-import { RedisChatMemory } from "../repositories/RedisChatMemory";
-import { AgentType } from "../types/AgentType";
-import { InputData } from "../types/InputData";
-import { OpenAIModels } from "../types/OpenAIModels";
+import { Agent } from '../agents/agent.ts';
+import { CustomerServiceAgent } from '../agents/cs-agent.ts';
+import { KnowledgeAgent } from '../agents/knowledge-agent.ts';
+import { OrchestratorAgent } from '../agents/orchestrator-agent.ts';
+import { PersonalityAgent } from '../agents/personality-agent.ts';
+import type { IAgentsServiceConfig } from '../interfaces/IAgentsServiceConfig.ts';
+import type { ChatMessage, IChatMemoryRepository } from '../interfaces/IChatMemoryRepository.ts';
+import { RedisChatMemory } from '../repositories/RedisChatMemory.ts';
+import { AgentType } from '../types/AgentType.ts';
+import type { InputData } from '../types/InputData.ts';
+import { OpenAIModels } from '../types/OpenAIModels.ts';
 import { v4 as uuidv4 } from "uuid";
-import { TicketService } from "./tickets-service";
+import { TicketService } from './tickets-service.ts';
 
 /**
  * AgentsService orchestrates multiple AI agents to handle user queries.

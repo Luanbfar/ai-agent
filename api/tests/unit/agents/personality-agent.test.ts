@@ -24,8 +24,8 @@ jest.mock("../../../src/config/loadEnv", () => ({
   openaiApiKey: "test-api-key",
 }));
 
-import { PersonalityAgent } from "../../../src/agents/personality-agent";
-import { ChatMessage } from "../../../src/interfaces/IChatMemoryRepository";
+import { PersonalityAgent } from "../../../src/agents/personality-agent.ts";
+import type { ChatMessage } from "../../../src/interfaces/IChatMemoryRepository.ts";
 
 let mockCreate: jest.Mock<any>;
 

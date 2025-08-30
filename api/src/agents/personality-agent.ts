@@ -1,7 +1,7 @@
-import { ChatMessage } from "../interfaces/IChatMemoryRepository";
-import { OpenAIModels } from "../types/OpenAIModels";
-import { Agent } from "./agent";
-import { personalityAgentInstruction } from "./prompts";
+import type { ChatMessage } from '../interfaces/IChatMemoryRepository.ts';
+import { OpenAIModels } from '../types/OpenAIModels.ts';
+import { Agent } from './agent.ts';
+import { personalityAgentInstruction } from './prompts.ts';
 
 /**
  * PersonalityAgent applies a persona to the AI-generated responses,

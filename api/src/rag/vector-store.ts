@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
-import { supabaseApiKey, supabaseUrl } from "../config/loadEnv";
-import embeddings from "./embedder";
+import { supabaseApiKey, supabaseUrl } from '../config/loadEnv.ts';
+import embeddings from './embedder.ts';
 
 /**
  * Initializes the Supabase client using credentials from environment config.

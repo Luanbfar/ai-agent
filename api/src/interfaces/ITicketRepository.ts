@@ -1,4 +1,4 @@
-import { ITicket } from "./ITicket";
+import type { ITicket } from './ITicket.ts';
 
 export interface ITicketRepository {
   /**

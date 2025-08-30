@@ -1,8 +1,8 @@
-import { ChatMessage } from "../interfaces/IChatMemoryRepository";
-import { AgentType } from "../types/AgentType";
-import { OpenAIModels } from "../types/OpenAIModels";
-import { Agent } from "./agent";
-import { orchestratorInstruction } from "./prompts";
+import type { ChatMessage } from '../interfaces/IChatMemoryRepository.ts';
+import { AgentType } from '../types/AgentType.ts';
+import { OpenAIModels } from '../types/OpenAIModels.ts';
+import { Agent } from './agent.ts';
+import { orchestratorInstruction } from './prompts.ts';
 
 /**
  * OrchestratorAgent decides which agent type should handle a

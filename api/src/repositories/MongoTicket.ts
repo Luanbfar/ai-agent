@@ -1,6 +1,6 @@
-import { ITicket } from "../interfaces/ITicket";
-import { ITicketRepository } from "../interfaces/ITicketRepository";
-import TicketModel from "../models/ticket-model";
+import type { ITicket } from '../interfaces/ITicket.ts';
+import type { ITicketRepository } from '../interfaces/ITicketRepository.ts';
+import TicketModel from '../models/ticket-model.ts';
 
 /**
  * MongoTicketRepository implements ITicketRepository using Mongoose ODM.

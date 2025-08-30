@@ -1,8 +1,8 @@
-import { ChatMessage } from "../interfaces/IChatMemoryRepository";
-import { DocumentRetriever } from "../rag/retriever";
-import { OpenAIModels } from "../types/OpenAIModels";
-import { Agent } from "./agent";
-import { knowledgeAgentInstruction } from "./prompts";
+import type { ChatMessage } from '../interfaces/IChatMemoryRepository.ts';
+import { DocumentRetriever } from '../rag/retriever.ts';
+import { OpenAIModels } from '../types/OpenAIModels.ts';
+import { Agent } from './agent.ts';
+import { knowledgeAgentInstruction } from './prompts.ts';
 
 /**
  * KnowledgeAgent extends Agent and integrates a RAG pipeline

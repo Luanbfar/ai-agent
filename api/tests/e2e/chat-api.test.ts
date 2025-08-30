@@ -35,9 +35,9 @@ jest.mock("../../src/repositories/MongoTicket", () => ({
 }));
 
 // Import the handler after mocks
-import { handleChatRequest } from "../../src/controllers/chat-controller";
-import { AgentType } from "../../src/types/AgentType";
-import { IChatMemoryRepository } from "../../src/interfaces/IChatMemoryRepository";
+import { handleChatRequest } from "../../src/controllers/chat-controller.ts";
+import { AgentType } from "../../src/types/AgentType.ts";
+import type { IChatMemoryRepository } from "../../src/interfaces/IChatMemoryRepository.ts";
 
 describe("Chat API E2E", () => {
   let app: express.Express;

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && node tools/compile.js",
+    "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "test": "jest",
@@ -36,6 +36,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/node": "^24.2.1",
+    "@types/supertest": "^6.0.3",
     "jest": "^30.0.5",
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.1"

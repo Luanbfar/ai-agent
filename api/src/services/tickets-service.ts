@@ -1,7 +1,7 @@
-import { ITicket } from "../interfaces/ITicket";
-import { ITicketRepository } from "../interfaces/ITicketRepository";
-import { MongoTicketRepository } from "../repositories/MongoTicket";
-import { TicketDetails } from "../types/TicketDetails";
+import type { ITicket } from '../interfaces/ITicket.ts';
+import type { ITicketRepository } from '../interfaces/ITicketRepository.ts';
+import { MongoTicketRepository } from '../repositories/MongoTicket.ts';
+import type { TicketDetails } from '../types/TicketDetails.ts';
 
 /**
  * Service responsible for handling ticket creation and management.

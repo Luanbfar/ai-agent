@@ -36,15 +36,15 @@ jest.mock("../../../src/rag/retriever", () => {
 });
 
 // Import after mocking
-import { KnowledgeAgent } from "../../../src/agents/knowledge-agent";
-import { ChatMessage } from "../../../src/interfaces/IChatMemoryRepository";
+import { KnowledgeAgent } from "../../../src/agents/knowledge-agent.ts";
+import type { ChatMessage } from "../../../src/interfaces/IChatMemoryRepository.ts";
 
 let mockCreate: jest.Mock<any>;
 let mockRetrieve: jest.Mock<any>;
 
 beforeAll(async () => {
   const openaiModule = await import("openai");
-  const retrieverModule = await import("../../../src/rag/retriever");
+  const retrieverModule = await import("../../../src/rag/retriever.ts");
   mockCreate = (openaiModule as any).__mockCreate;
   mockRetrieve = (retrieverModule as any).__mockRetrieve;
 });

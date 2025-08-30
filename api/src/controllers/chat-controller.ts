@@ -1,7 +1,7 @@
-import { Request, Response } from "express";
-import { InputData } from "../types/InputData";
-import { AgentsService } from "../services/agents-service";
-import { ChatMessage } from "../interfaces/IChatMemoryRepository";
+import type { Request, Response } from "express";
+import type { InputData } from '../types/InputData.ts';
+import { AgentsService } from '../services/agents-service.ts';
+import type { ChatMessage } from '../interfaces/IChatMemoryRepository.ts';
 
 const agentsService = new AgentsService();
 

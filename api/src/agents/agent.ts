@@ -1,7 +1,7 @@
 import OpenAI from "openai";
-import { openaiApiKey } from "../config/loadEnv";
-import { OpenAIModels } from "../types/OpenAIModels";
-import { ChatMessage } from "../interfaces/IChatMemoryRepository";
+import { openaiApiKey } from '../config/loadEnv.ts';
+import { OpenAIModels } from '../types/OpenAIModels.ts';
+import type { ChatMessage } from '../interfaces/IChatMemoryRepository.ts';
 
 /**
  * Abstract base class representing a generic AI agent using OpenAI.

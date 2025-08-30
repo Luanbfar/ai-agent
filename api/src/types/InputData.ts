@@ -1,4 +1,4 @@
-import { ChatMessage } from "../interfaces/IChatMemoryRepository";
+import type { ChatMessage } from '../interfaces/IChatMemoryRepository.ts';
 
 export type InputData = {
   userId: string;
