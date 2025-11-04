@@ -42,7 +42,7 @@ export class KnowledgeAgent extends Agent {
       // Prepend retrieved context as a system message
       const augmentedMessages = [{ role: "system", content: docsContent }, ...chatMessages] as ChatMessage[];
 
-      const result = await this.client.generateResponse(this.systemPrompt, augmentedMessages);
+      const result = await this.client.generateResponse(this.model, this.systemPrompt, augmentedMessages);
 
       return result.response;
     } catch (error) {

@@ -26,7 +26,7 @@ export class OrchestratorAgent extends Agent {
    */
   override async generate(chatMessage: ChatMessage): Promise<any> {
     try {
-      const result = await this.client.generateResponse(this.systemPrompt, [
+      const result = await this.client.generateResponse(this.model, this.systemPrompt, [
         { role: chatMessage.role, content: chatMessage.content },
       ]);
       const rawResponse = result.response;

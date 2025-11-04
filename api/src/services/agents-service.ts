@@ -48,8 +48,8 @@ export class AgentsService {
 
     // Initialize agents with default or custom model
     const defaultModel = config.defaultModel;
-    this.orchestratorAgent = new OrchestratorAgent(client, defaultModel);
-    this.personalityAgent = new PersonalityAgent(client, defaultModel);
+    this.orchestratorAgent = new OrchestratorAgent(client, OpenAIModels.GPT35Turbo);
+    this.personalityAgent = new PersonalityAgent(client, OpenAIModels.GPT35Turbo);
 
     // Initialize specialized agents
     this.agentsMap = this.initializeAgents(defaultModel);
@@ -58,7 +58,7 @@ export class AgentsService {
   /**
    * Initialize the available agents map
    */
-  private initializeAgents(model: OpenAIModels): Record<AgentType, Agent> {
+  private initializeAgents(model: string): Record<AgentType, Agent> {
     return {
       knowledgeAgent: new KnowledgeAgent(this.client, model),
       csAgent: new CustomerServiceAgent(this.client, model),
@@ -85,12 +85,12 @@ export class AgentsService {
 
       if (ticket === null) {
         // Enhance response with personality
-        const enhancedResponse = await this.enhancePersonality(inputData.chatMessage, response);
+        // const enhancedResponse = await this.enhancePersonality(inputData.chatMessage, response);
 
         // Persist conversation
-        await this.saveConversation(userId, inputData.chatMessage, enhancedResponse);
+        await this.saveConversation(userId, inputData.chatMessage, response);
 
-        return { userId, response: enhancedResponse };
+        return { userId, response: response };
       }
       const ticketResponse = ticket.response;
       return { userId, ticketResponse };

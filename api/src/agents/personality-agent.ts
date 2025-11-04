@@ -25,7 +25,7 @@ export class PersonalityAgent extends Agent {
    */
   override async generate(chatMessages: ChatMessage[]): Promise<string> {
     try {
-      const result = await this.client.generateResponse(this.systemPrompt, chatMessages);
+      const result = await this.client.generateResponse(this.model, this.systemPrompt, chatMessages);
 
       return result.response;
     } catch (error) {
