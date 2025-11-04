@@ -1,7 +1,8 @@
-import type { ChatMessage } from '../interfaces/IChatMemoryRepository.ts';
-import { OpenAIModels } from '../types/OpenAIModels.ts';
-import { Agent } from './agent.ts';
-import { personalityAgentInstruction } from './prompts.ts';
+import type { IAgentClient } from "../interfaces/IAgentClient.ts";
+import type { ChatMessage } from "../interfaces/IChatMemoryRepository.ts";
+import { OpenAIModels } from "../types/OpenAIModels.ts";
+import { Agent } from "./agent.ts";
+import { personalityAgentInstruction } from "./prompts.ts";
 
 /**
  * PersonalityAgent applies a persona to the AI-generated responses,
@@ -13,8 +14,8 @@ export class PersonalityAgent extends Agent {
    * @param model - Optional OpenAI model to use.
    * @param systemPrompt - Optional system prompt, defaults to personalityAgentInstruction.
    */
-  constructor(model?: OpenAIModels, systemPrompt: string = personalityAgentInstruction) {
-    super(model, systemPrompt);
+  constructor(client: IAgentClient, model: string, systemPrompt: string = personalityAgentInstruction) {
+    super(client, model, systemPrompt);
   }
 
   /**
@@ -24,13 +25,9 @@ export class PersonalityAgent extends Agent {
    */
   override async generate(chatMessages: ChatMessage[]): Promise<string> {
     try {
-      const response = await this.client.responses.create({
-        model: this.model,
-        instructions: this.systemPrompt,
-        input: chatMessages,
-      });
+      const result = await this.client.generateResponse(this.systemPrompt, chatMessages);
 
-      return response.output_text;
+      return result.response;
     } catch (error) {
       console.error("Error generating response:", error);
       throw new Error("Failed to generate response");

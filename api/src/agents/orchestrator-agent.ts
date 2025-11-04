@@ -1,8 +1,9 @@
-import type { ChatMessage } from '../interfaces/IChatMemoryRepository.ts';
-import { AgentType } from '../types/AgentType.ts';
-import { OpenAIModels } from '../types/OpenAIModels.ts';
-import { Agent } from './agent.ts';
-import { orchestratorInstruction } from './prompts.ts';
+import type { IAgentClient } from "../interfaces/IAgentClient.ts";
+import type { ChatMessage } from "../interfaces/IChatMemoryRepository.ts";
+import { AgentType } from "../types/AgentType.ts";
+import { OpenAIModels } from "../types/OpenAIModels.ts";
+import { Agent } from "./agent.ts";
+import { orchestratorInstruction } from "./prompts.ts";
 
 /**
  * OrchestratorAgent decides which agent type should handle a
@@ -14,8 +15,8 @@ export class OrchestratorAgent extends Agent {
    * @param model - Optional OpenAI model to use.
    * @param systemPrompt - Optional system prompt, defaults to orchestratorInstruction.
    */
-  constructor(model?: OpenAIModels, systemPrompt: string = orchestratorInstruction) {
-    super(model, systemPrompt);
+  constructor(client: IAgentClient, model: string, systemPrompt: string = orchestratorInstruction) {
+    super(client, model, systemPrompt);
   }
 
   /**
@@ -25,12 +26,11 @@ export class OrchestratorAgent extends Agent {
    */
   override async generate(chatMessage: ChatMessage): Promise<any> {
     try {
-      const rawResponse = await this.client.responses.create({
-        model: this.model,
-        instructions: this.systemPrompt,
-        input: [{ role: chatMessage.role, content: chatMessage.content }],
-      });
-      const response = JSON.parse(rawResponse.output_text);
+      const result = await this.client.generateResponse(this.systemPrompt, [
+        { role: chatMessage.role, content: chatMessage.content },
+      ]);
+      const rawResponse = result.response;
+      const response = JSON.parse(rawResponse);
       return response;
     } catch (error) {
       console.error("Error generating response:", error);

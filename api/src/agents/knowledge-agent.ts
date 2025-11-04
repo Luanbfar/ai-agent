@@ -1,8 +1,9 @@
-import type { ChatMessage } from '../interfaces/IChatMemoryRepository.ts';
-import { DocumentRetriever } from '../rag/retriever.ts';
-import { OpenAIModels } from '../types/OpenAIModels.ts';
-import { Agent } from './agent.ts';
-import { knowledgeAgentInstruction } from './prompts.ts';
+import type { IAgentClient } from "../interfaces/IAgentClient.ts";
+import type { ChatMessage } from "../interfaces/IChatMemoryRepository.ts";
+import { DocumentRetriever } from "../rag/retriever.ts";
+import { OpenAIModels } from "../types/OpenAIModels.ts";
+import { Agent } from "./agent.ts";
+import { knowledgeAgentInstruction } from "./prompts.ts";
 
 /**
  * KnowledgeAgent extends Agent and integrates a RAG pipeline
@@ -16,8 +17,8 @@ export class KnowledgeAgent extends Agent {
    * @param model - Optional OpenAI model to use.
    * @param systemPrompt - Optional system prompt, defaults to knowledgeAgentInstruction.
    */
-  constructor(model?: OpenAIModels, systemPrompt: string = knowledgeAgentInstruction) {
-    super(model, systemPrompt);
+  constructor(client: IAgentClient, model: string, systemPrompt: string = knowledgeAgentInstruction) {
+    super(client, model, systemPrompt);
     this.retriever = new DocumentRetriever();
   }
 
@@ -39,18 +40,11 @@ export class KnowledgeAgent extends Agent {
       const docsContent = docs.context.map((doc) => doc.pageContent).join("\n");
 
       // Prepend retrieved context as a system message
-      const augmentedMessages = [
-        { role: "system", content: docsContent },
-        ...chatMessages,
-      ] as ChatMessage[];
+      const augmentedMessages = [{ role: "system", content: docsContent }, ...chatMessages] as ChatMessage[];
 
-      const response = await this.client.responses.create({
-        model: this.model,
-        instructions: this.systemPrompt,
-        input: augmentedMessages,
-      });
+      const result = await this.client.generateResponse(this.systemPrompt, augmentedMessages);
 
-      return response.output_text;
+      return result.response;
     } catch (error) {
       console.error("Error generating response:", error);
       throw new Error("Failed to generate response");

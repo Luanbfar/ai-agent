@@ -1,9 +1,7 @@
 import type { Request, Response } from "express";
-import type { InputData } from '../types/InputData.ts';
-import { AgentsService } from '../services/agents-service.ts';
-import type { ChatMessage } from '../interfaces/IChatMemoryRepository.ts';
-
-const agentsService = new AgentsService();
+import type { InputData } from "../types/InputData.ts";
+import type { ChatMessage } from "../interfaces/IChatMemoryRepository.ts";
+import { agentsService } from "../app/app.ts";
 
 /**
  * Express route handler for chat requests.

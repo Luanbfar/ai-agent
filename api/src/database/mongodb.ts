@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { mongoURL } from '../config/loadEnv.ts';
+import { mongoURL } from "../config/loadEnv.ts";
 
 export async function connectToDatabase() {
   try {

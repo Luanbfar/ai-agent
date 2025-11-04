@@ -1,16 +1,17 @@
-import { Agent } from '../agents/agent.ts';
-import { CustomerServiceAgent } from '../agents/cs-agent.ts';
-import { KnowledgeAgent } from '../agents/knowledge-agent.ts';
-import { OrchestratorAgent } from '../agents/orchestrator-agent.ts';
-import { PersonalityAgent } from '../agents/personality-agent.ts';
-import type { IAgentsServiceConfig } from '../interfaces/IAgentsServiceConfig.ts';
-import type { ChatMessage, IChatMemoryRepository } from '../interfaces/IChatMemoryRepository.ts';
-import { RedisChatMemory } from '../repositories/RedisChatMemory.ts';
-import { AgentType } from '../types/AgentType.ts';
-import type { InputData } from '../types/InputData.ts';
-import { OpenAIModels } from '../types/OpenAIModels.ts';
+import { Agent } from "../agents/agent.ts";
+import { CustomerServiceAgent } from "../agents/cs-agent.ts";
+import { KnowledgeAgent } from "../agents/knowledge-agent.ts";
+import { OrchestratorAgent } from "../agents/orchestrator-agent.ts";
+import { PersonalityAgent } from "../agents/personality-agent.ts";
+import type { IAgentsServiceConfig } from "../interfaces/IAgentsServiceConfig.ts";
+import type { ChatMessage, IChatMemoryRepository } from "../interfaces/IChatMemoryRepository.ts";
+import { RedisChatMemory } from "../repositories/RedisChatMemory.ts";
+import { AgentType } from "../types/AgentType.ts";
+import type { InputData } from "../types/InputData.ts";
+import { OpenAIModels } from "../types/OpenAIModels.ts";
 import { v4 as uuidv4 } from "uuid";
-import { TicketService } from './tickets-service.ts';
+import { TicketService } from "./tickets-service.ts";
+import type { IAgentClient } from "../interfaces/IAgentClient.ts";
 
 /**
  * AgentsService orchestrates multiple AI agents to handle user queries.
@@ -37,16 +38,18 @@ export class AgentsService {
   private readonly orchestratorAgent: OrchestratorAgent;
   private readonly personalityAgent: PersonalityAgent;
   private readonly agentsMap: Record<AgentType, Agent>;
+  private readonly client: IAgentClient;
 
-  constructor(config: IAgentsServiceConfig = {}) {
+  constructor(config: IAgentsServiceConfig, client: IAgentClient) {
     // Initialize dependencies
     this.ticketService = new TicketService();
     this.chatMemoryRepo = config.chatMemoryRepo || new RedisChatMemory();
+    this.client = client;
 
     // Initialize agents with default or custom model
-    const defaultModel = config.defaultModel || OpenAIModels.GPT5_NANO;
-    this.orchestratorAgent = new OrchestratorAgent(defaultModel);
-    this.personalityAgent = new PersonalityAgent(defaultModel);
+    const defaultModel = config.defaultModel;
+    this.orchestratorAgent = new OrchestratorAgent(client, defaultModel);
+    this.personalityAgent = new PersonalityAgent(client, defaultModel);
 
     // Initialize specialized agents
     this.agentsMap = this.initializeAgents(defaultModel);
@@ -57,8 +60,8 @@ export class AgentsService {
    */
   private initializeAgents(model: OpenAIModels): Record<AgentType, Agent> {
     return {
-      knowledgeAgent: new KnowledgeAgent(model),
-      csAgent: new CustomerServiceAgent(model),
+      knowledgeAgent: new KnowledgeAgent(this.client, model),
+      csAgent: new CustomerServiceAgent(this.client, model),
     };
   }
 
