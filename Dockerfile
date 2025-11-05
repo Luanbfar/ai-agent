@@ -11,7 +11,6 @@ RUN npm ci --omit=optional
 FROM deps AS build
 COPY api/src ./src
 COPY api/tsconfig.json ./
-COPY api/tools ./tools
 RUN npm run build
 
 # Test stage
