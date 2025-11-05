@@ -1,20 +1,19 @@
-import type { ITicket } from '../interfaces/ITicket.ts';
-import type { ITicketRepository } from '../interfaces/ITicketRepository.ts';
-import { MongoTicketRepository } from '../repositories/MongoTicket.ts';
-import type { TicketDetails } from '../types/TicketDetails.ts';
+import type { ITicket } from "../interfaces/ITicket.ts";
+import type { ITicketRepository } from "../interfaces/ITicketRepository.ts";
+import type { TicketDetails } from "../types/TicketDetails.ts";
 
 /**
  * Service responsible for handling ticket creation and management.
  */
 export class TicketService {
-  private mongoTicketRepository: ITicketRepository;
+  private ticketRepository: ITicketRepository;
 
   /**
    * Initializes a new instance of TicketService
    * and sets up the MongoDB ticket repository.
    */
-  constructor() {
-    this.mongoTicketRepository = new MongoTicketRepository();
+  constructor(ticketRepository: ITicketRepository) {
+    this.ticketRepository = ticketRepository;
   }
 
   /**
@@ -30,7 +29,7 @@ export class TicketService {
         description: ticketDetails.description,
         status: ticketDetails.status,
       };
-      const createdTicket = await this.mongoTicketRepository.create(ticketData);
+      const createdTicket = await this.ticketRepository.create(ticketData);
       return createdTicket;
     } catch (error) {
       console.error(error);
@@ -69,6 +68,9 @@ export class TicketService {
 
       return null;
     } catch (error) {
+      if (error instanceof SyntaxError) {
+        return null; // Not a JSON response, so no ticket action
+      }
       console.error("handleTicketCreation error:", error);
       return null;
     }

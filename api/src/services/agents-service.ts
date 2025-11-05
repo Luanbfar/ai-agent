@@ -12,6 +12,7 @@ import { OpenAIModels } from "../types/OpenAIModels.ts";
 import { v4 as uuidv4 } from "uuid";
 import { TicketService } from "./tickets-service.ts";
 import type { IAgentClient } from "../interfaces/IAgentClient.ts";
+import { MongoTicketRepository } from "../repositories/MongoTicket.ts";
 
 /**
  * AgentsService orchestrates multiple AI agents to handle user queries.
@@ -42,7 +43,8 @@ export class AgentsService {
 
   constructor(config: IAgentsServiceConfig, client: IAgentClient) {
     // Initialize dependencies
-    this.ticketService = new TicketService();
+    const mongoTicketRepository = new MongoTicketRepository();
+    this.ticketService = new TicketService(mongoTicketRepository);
     this.chatMemoryRepo = config.chatMemoryRepo || new RedisChatMemory();
     this.client = client;
 
@@ -85,12 +87,12 @@ export class AgentsService {
 
       if (ticket === null) {
         // Enhance response with personality
-        // const enhancedResponse = await this.enhancePersonality(inputData.chatMessage, response);
+        const enhancedResponse = await this.enhancePersonality(inputData.chatMessage, response);
 
         // Persist conversation
         await this.saveConversation(userId, inputData.chatMessage, response);
 
-        return { userId, response: response };
+        return { userId, response: enhancedResponse };
       }
       const ticketResponse = ticket.response;
       return { userId, ticketResponse };
