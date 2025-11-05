@@ -15,9 +15,6 @@ const env = cleanEnv(process.env, {
   SUPABASE_API_KEY: str({
     desc: "The API key for the Supabase instance",
   }),
-  REDIS_PASSWORD: str({
-    desc: "The password for the Redis client",
-  }),
   REDIS_URL: str({
     desc: "The host URL for the Redis client",
   }),
@@ -30,6 +27,5 @@ export const port = env.PORT;
 export const openaiApiKey = env.OPENAI_API_KEY;
 export const supabaseUrl = env.SUPABASE_URL;
 export const supabaseApiKey = env.SUPABASE_API_KEY;
-export const redisPassword = env.REDIS_PASSWORD;
 export const redisURL = env.REDIS_URL;
 export const mongoURL = env.MONGODB_URL;
