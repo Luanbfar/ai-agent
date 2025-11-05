@@ -1,5 +1,5 @@
 import { Document } from "mongoose";
-import { TicketDetails } from "../types/TicketDetails";
+import type { TicketDetails } from '../types/TicketDetails.ts';
 
 /**
  * Interface representing a Ticket document in MongoDB.

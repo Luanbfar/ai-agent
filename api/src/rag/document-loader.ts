@@ -19,6 +19,7 @@ function parseHTMLDocument(html: string): string {
     throw new Error("HTML content is empty or undefined");
   }
   const $ = cheerio.load(html);
+  $("script, style, noscript, iframe, svg, link").remove();
   const text = $("body").text() || "";
   return text.trim();
 }

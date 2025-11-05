@@ -25,9 +25,9 @@ jest.mock("../../../src/config/loadEnv", () => ({
 }));
 
 // Import after mocking
-import { OrchestratorAgent } from "../../../src/agents/orchestrator-agent";
-import { AgentType } from "../../../src/types/AgentType";
-import { ChatMessage } from "../../../src/interfaces/IChatMemoryRepository";
+import { OrchestratorAgent } from "../../../src/agents/orchestrator-agent.ts";
+import { AgentType } from "../../../src/types/AgentType.ts";
+import type { ChatMessage } from "../../../src/interfaces/IChatMemoryRepository.ts";
 
 let mockCreate: jest.Mock<any>;
 

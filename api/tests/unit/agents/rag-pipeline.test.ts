@@ -8,7 +8,7 @@ jest.mock("node-fetch", () => ({
 jest.mock("../../../src/rag/document-loader", () => ({
   __esModule: true,
   default: jest.fn(async () => {
-    const { mockHtmlPage } = await import("../../mocks/sample-page.html");
+    const { mockHtmlPage } = await import("../../mocks/sample-page.html.ts");
     return [
       {
         pageContent: mockHtmlPage,
@@ -32,14 +32,14 @@ jest.mock("../../../src/utils/log", () => ({
 }));
 
 // Import after mocking
-import { DocumentRetriever } from "../../../src/rag/retriever";
+import { DocumentRetriever } from "../../../src/rag/retriever.ts";
 
 let isDocumentUpToDateMock: jest.Mock<any>;
 let similaritySearchMock: jest.Mock<any>;
 
 beforeAll(async () => {
-  const utilsLog = await import("../../../src/utils/log");
-  const vectorStore = await import("../../../src/rag/vector-store");
+  const utilsLog = await import("../../../src/utils/log.ts");
+  const vectorStore = await import("../../../src/rag/vector-store.ts");
 
   isDocumentUpToDateMock = utilsLog.isDocumentUpToDate as jest.Mock;
   similaritySearchMock = vectorStore.default.similaritySearch as jest.Mock;
@@ -73,7 +73,7 @@ describe("RAG Pipeline", () => {
 
     const result = await retriever.retrieve("What are your business hours?");
 
-    expect(result.context[0].pageContent).toMatch(/Monday to Friday from 9:00 AM to 6:00 PM/);
+    expect(result.context[0]?.pageContent).toMatch(/Monday to Friday from 9:00 AM to 6:00 PM/);
   });
 
   it("should retrieve documents when up to date", async () => {

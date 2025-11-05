@@ -1,5 +1,5 @@
 import mongoose, { Schema, Model } from "mongoose";
-import { ITicket } from "../interfaces/ITicket";
+import type { ITicket } from '../interfaces/ITicket.ts';
 
 const TicketSchema: Schema = new Schema(
   {

@@ -1,5 +1,5 @@
-import client from "../database/redis";
-import { ChatMessage, IChatMemoryRepository } from "../interfaces/IChatMemoryRepository";
+import client from '../database/redis.ts';
+import type { ChatMessage, IChatMemoryRepository } from '../interfaces/IChatMemoryRepository.ts';
 
 /**
  * Redis-based implementation of chat memory repository.
