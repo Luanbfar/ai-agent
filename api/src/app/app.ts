@@ -6,10 +6,20 @@ import { AgentClient } from "../agents/client.ts";
 import { openaiApiKey } from "../config/loadEnv.ts";
 import { AgentsService } from "../services/agents-service.ts";
 import { OpenAIModels } from "../types/OpenAIModels.ts";
+import { MongoTicketRepository } from "../repositories/MongoTicket.ts";
+import { TicketService } from "../services/tickets-service.ts";
+import { RedisChatMemory } from "../repositories/RedisChatMemory.ts";
 
 const app = express();
+const mongoTicketRepository = new MongoTicketRepository();
+const redisChatMemory = new RedisChatMemory();
+const serviceConfig = {
+  chatMemoryRepo: redisChatMemory,
+  defaultModel: OpenAIModels.GPT5_NANO,
+};
 const agentClient = new AgentClient(openaiApiKey);
-const agentsService = new AgentsService({ defaultModel: OpenAIModels.GPT5_NANO }, agentClient);
+const ticketService = new TicketService(mongoTicketRepository);
+export const agentsService = new AgentsService(serviceConfig, agentClient, ticketService);
 
 app.use(cors());
 app.use(express.json());
@@ -22,4 +32,3 @@ app.get("/", async (req: Request, res: Response) => {
 app.use("/api", router);
 
 export default app;
-export { agentsService };
