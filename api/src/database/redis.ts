@@ -1,5 +1,5 @@
 import { createClient } from "redis";
-import { redisPassword, redisURL } from "../config/loadEnv.ts";
+import { redisURL } from "../config/loadEnv.ts";
 
 /**
  * Redis client configured to connect to the Redis server.
@@ -7,7 +7,6 @@ import { redisPassword, redisURL } from "../config/loadEnv.ts";
  */
 const client = createClient({
   username: "default", // Default Redis username, adjust if your setup differs
-  password: redisPassword,
   url: redisURL,
 });
 
